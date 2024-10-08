@@ -1,0 +1,14 @@
+html {
+    font: 24px "Segoe UI", sans-serif;
+    background: rgb(52, 42, 73);
+}
+
+a {
+    color: azure;
+    text-decoration: none;
+}
+
+.unavailable {
+    color: gray;
+    opacity: 0.1;
+}
