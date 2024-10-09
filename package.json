@@ -10,6 +10,11 @@
     "type": "git",
     "url": "git+https://github.com/DrumRack/it-notes.git"
   },
+  "keywords": [
+    "css",
+    "git",
+    "webpack"
+  ],
   "author": "Mikhail Kolesnikov <redrumrack@gmail.com>",
   "license": "ISC",
   "bugs": {

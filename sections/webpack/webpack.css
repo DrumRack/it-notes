@@ -1,0 +1,15 @@
+table {
+    border-collapse: collapse;
+}
+
+th[scope="row"], td {
+    text-align: start;
+    font-weight: normal;
+    border: 1px solid;
+    padding: 0 15px;
+}
+
+pre {
+    border: 1px dashed;
+    padding: 20px;
+}
