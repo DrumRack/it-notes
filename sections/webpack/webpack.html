@@ -8,127 +8,383 @@
     <title>Webpack</title>
 </head>
 <body>
-    <p>Версия: 5.95.0</p>
-    <p>Официальный сайт: <a href="https://webpack.js.org" target="_blank">Webpack</a></p>
-    <section>
-        <h2>Установка</h2>
-        <p><code>npm install --save-dev webpack</code></p>
-        <p><code>npm install --save-dev webpack-cli</code></p>
-    </section>
-    <section>
-        <h2>Конфигурация</h2>
-        <p>Конфигурация это файл с названием <code>webpack.config.js</code>, которой должен лежать в корне проекта.</p>
-        <h3>Шаблон</h3>
-        <pre>const path = require('path')
-            const HTMLWebpackPlugin = require('html-webpack-plugin')
-            const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-            
-            module.exports = {
-                context: path.resolve(__dirname, 'src'),
-                mode: 'development',
-                entry: {
-                    main: './index.js',
-                    analytics: './analytics.js',
-                },
-                output: {
-                    filename: '[name].[contenthash].js',
-                    path: path.resolve(__dirname, 'dist'),
-                },
-                plugins: [
-                    new HTMLWebpackPlugin({
-                        template: './index.html',
-                    }),
-                    new CleanWebpackPlugin(),
-                ],
-                module: {
-                    rules: [
-                        {
-                            test: /\.css$/,
-                            use: ['style-loader', 'css-loader']
+    <main>
+        <h1>Webpack</h1>
+        <p>Версия: 5.95.0</p>
+        <p>Сборщик модулей</p>
+        <p><a href="https://webpack.js.org" target="_blank">Официальный сайт</a></p>
+        <p><a href="https://github.com/webpack/webpack" target="_blank">Github</a></p>
+        <p><a href="https://www.npmjs.com/package/webpack" target="_blank">npm</a></p>
+        <section>
+            <h2>Установка</h2>
+            <p><code>npm install --save-dev webpack</code></p>
+            <p><code>npm install --save-dev webpack-cli</code></p>
+        </section>
+        <section>
+            <h2>Команды CLI</h2>
+            <ul>
+                <li>--mode development</li>
+                <li>--mode production</li>
+                <li>--watch позволяет следить за изменениями и пересобирать сборку в случае изменения исходников</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Конфигурация</h2>
+            <p>Конфигурация определяется с помощью файла <code>webpack.config.js</code>, располагающегося корневой директории проекта.</p>
+            <h3>Шаблон</h3>
+            <pre>const path = require('path')
+                const HTMLWebpackPlugin = require('html-webpack-plugin')
+                const {CleanWebpackPlugin} = require('clean-webpack-plugin')
+                const CopyWebpackPlugin = require('copy-webpack-plugin')
+                const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+                const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin')
+                const TerserWebpackPlugin = require('terser-webpack-plugin')
+                const { options } = require('less')
+                
+                const isDev = process.env.NODE_ENV === 'development'
+                const isProd = !isDev
+                
+                const optimization = () => {
+                    const config = {
+                        splitChunks: {
+                            chunks: 'all'
                         }
-                    ]
+                    }
+                
+                    if (isProd) {
+                        config.minimizer = [
+                            new CssMinimizerWebpackPlugin(),
+                            new TerserWebpackPlugin()
+                        ]
+                    }
+                
+                    return config
                 }
-            }</pre>
-        <h3>Настройки</h3>
-        <table>
-            <tr>
-                <th scope="row">context</th>
-                <td>Директория, с исходными файлами для сборки. По умолчанию используется текущий рабочий каталог. Необходимо указывать абсолютный путь (абсолютный путь лучше всего указывать с помощью класса Node.js path с методом resolve - path.resolve(__dirname, 'src'))</td>
-            </tr>
-            <tr>
-                <th scope="row">entry</th>
-                <td>Точка входа. Файл JavaScript (путь), из которого webpack будет создавать сборку. Именно в этот файл должны добавляться все импорты других JavaScript файлов. Вместо одного файла может быть указан объект, содержащий свойства (имена) и значения (пути) к нескольким входным файлам</td>
-            </tr>
-            <tr>
-                <th scope="row">mode</th>
-                <td>
-                    Режим сборки.<br>
-                    Возможные значения:
-                    <dl>
-                        <dt><code>none</code></dt>
-                        <dd></dd>
-                        <dt><code>development</code></dt>
-                        <dd>Режим разработки. Собираемый файл не минифицируеться. Значение по умолчанию.</dd>
-                        <dt><code>production</code></dt>
-                        <dd>Режим продакшена. Собираемый файл минифицируеться. </dd>
-                    </dl>
-                </td>
-            </tr>
-            <tr>
-                <th scope="row">module</th>
-                <td>В качестве значения используется объект со свойством rules. У свойства rules в качестве значения используется массив в котором каждый элемент является объектом. Каждый таком объекте используются 2 свойства - test и use. Свойство test принимает регулярное выражение (не строка) определяющее какой для какого типа файлов будет предназначаться правило (например для файлов CSS: <code>/\.css$/</code>). Свойство use долнжно принимать строку, либо массив в котором каждое значение будет определять какой лоадер будет использоваться. Лоадеры будут использоваться в порядке от большего индекса массива к меньшиму (т.е. справа налево).</td>
-            </tr>
-            <tr>
-                <th scope="row">output</th>
-                <td>Объект, содержайщий два свойства - filename и path. filename это имя файла который будет собран в результате работы webpack. path это абсолютный путь до той директории, в которой будет собран выходной файл (абсолютный путь лучше всего указывать с помощью класса Node.js path с методом resolve - path.resolve(__dirname, 'dist'))</td>
-            </tr>
-            <tr>
-                <th scope="row">plugins</th>
-                <td></td>
-            </tr>
-        </table>
-    </section>
-    <section>
-        <h2>Плагины</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th scope="col">Название</th>
-                    <th scope="col">Установка</th>
-                    <th scope="col">Описание</th>
-                    <th scope="col">Подключение</th>
-                </tr>
-            </thead>
-            <tr>
-                <th scope="row"><a href="https://www.npmjs.com/package/html-webpack-plugin" target="_blank">html-webpack-plugin</a></th>
-                <td><code>npm install --save-dev html-webpack-plugin</code></td>
-                <td>Добавляет файл html в директорию сборки.</td>
-                <td><code>const HTMLWebpackPlugin = require('html-webpack-plugin')</code></td>
-            </tr>
-            <tr>
-                <th scope="row"><a href="https://www.npmjs.com/package/clean-webpack-plugin" target="_blank">clean-webpack-plugin</a></th>
-                <td><code>npm install --save-dev clean-webpack-plugin</code></td>
-                <td>Перед каждой сборкой очищает директорию, в которую кладутся выходные файлы, тем самым предотвращает засорение директории старыми файлами.</td>
-                <td><code>const {CleanWebpackPlugin} = require('clean-webpack-plugin')</code></td>
-            </tr>
-        </table>
-        <p>Все плагины должны подключаться в настройке plugins, которая принимает массив. Каждое значение этого массива должно быть новым (new) экземпляром подключаемого плагина</p>
-    </section>
-    <section>
-        <h2>Лоадеры</h2>
-        <p>Лоадеры добавляют функционал, позволяющий работать webpack с разными типами данных.</p>
-        <table>
-            <tr>
-                <td><a href="https://www.npmjs.com/package/css-loader" target="_blank">css-loader</a></td>
-                <td>npm install --save-dev css-loader</td>
-                <td>Позволяет понимать импортирование CSS в JS код</td>
-            </tr>
-            <tr>
-                <td><a href="https://www.npmjs.com/package/style-loader" target="_blank">style-loader</a></td>
-                <td>npm install --save-dev style-loader</td>
-                <td>Добаляет код CSS в head файла html</td>
-            </tr>
-        </table>
-    </section>
+                
+                const filename = ext => isDev ? `[name].${ext}` : `[name].[hash].${ext}`
+                
+                const cssLoaders = extra => {
+                    const loaders = [MiniCssExtractPlugin.loader, 'css-loader']
+                
+                    if (extra) {
+                        loaders.push(extra)
+                    }
+                    
+                    return loaders
+                }
+                
+                
+                module.exports = {
+                    context: path.resolve(__dirname, 'src'),
+                    mode: 'development',
+                    entry: {
+                        main: './index.js',
+                        analytics: './analytics.js',
+                    },
+                    output: {
+                        filename: filename('js'),
+                        path: path.resolve(__dirname, 'dist'),
+                    },
+                    resolve: {
+                        extensions: ['.js', '.json', '.png'],
+                        alias: {
+                            '@models': path.resolve(__dirname, 'src/models'),
+                            '@': path.resolve(__dirname, 'src')
+                        }
+                    },
+                    optimization: optimization(),
+                    devServer: {
+                        port: 4200,
+                        open: true,
+                        static: './src',
+                        hot: isDev
+                    },
+                    plugins: [
+                        new HTMLWebpackPlugin({
+                            template: './index.html',
+                            minify: {
+                                collapseWhitespace: isProd
+                            }
+                        }),
+                        new CleanWebpackPlugin(),
+                        new CopyWebpackPlugin({
+                            patterns: [{
+                                from: path.resolve(__dirname, 'src/favicon.ico'),
+                                to: path.resolve(__dirname, 'dist')
+                            }]
+                        }),
+                        new MiniCssExtractPlugin({
+                            filename: filename('css')
+                        })
+                    ],
+                    module: {
+                        rules: [
+                            {
+                                test: /\.css$/,
+                                use: cssLoaders()
+                            },
+                            {
+                                test: /\.less$/,
+                                use: cssLoaders('less-loader')
+                            },
+                            {
+                                test: /\.s[ac]ss$/,
+                                use: cssLoaders('sass-loader')
+                            },
+                            {
+                                test: /\.(png|jpg|svg|gif)$/,
+                                type: 'asset/resource'
+                            },
+                            {
+                                test: /\.xml$/,
+                                // use: 'xml-loader',
+                                type: 'asset/source'
+                            },
+                            {
+                                test: /\.csv$/,
+                                use: 'csv-loader',
+                                // type: 'asset/inline'
+                            }
+                        ]
+                    }
+                }</pre>
+            <h3>Настройки</h3>
+            <table>
+                <tbody>
+                    <tr>
+                        <th colspan="2" scope="row">context</th>
+                        <td>Директория, с исходными файлами для сборки. По умолчанию используется текущий рабочий каталог. Необходимо указывать абсолютный путь (абсолютный путь лучше всего указывать с помощью класса Node.js path с методом resolve - path.resolve(__dirname, 'src'))</td>
+                    </tr>
+                    <tr>
+                        <th rowspan="4" scope="rowgroup">devServer</th>
+                        <th scope="row">hot</th>
+                        <td>hot module replacement - горячая перезагрузка модулей. Указывать логичекое значение. Можно использовать переменную, которая если режим development будет иметь значение true: const isDev = process.env.NODE_ENV === 'development', тогда для hot можно не логическое значение задавать, переменную isDev. (Консольная команда для Windows - set NODE_ENV=development (для mac и ubuntu - export NODE_ENV=development), позволяет задать режим development)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">open</th>
+                        <td>Логическое значение. Позволяет открывать странцицу при запуске сервера</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">port</th>
+                        <td>devServer принимает объект со свойством port. У port значением является число, определяющее номар порта на котором будет запускаться dev server. После чего следует в package.json создать скрипт, например: "start": "webpack-dev-server --mode development --open", после чего можно будет запускать dev server командой npn start (без run). Это позволяет при изменении файлов для сборки сразу пересобирать проект и обновлять страницу (директория dist будет пуста, так как все файлы пересобираются и запускаются из оперативной памяти).</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">static</th>
+                        <td>Требуется указать строку с расположением исходников, чтоб была автоматическая перезагрузка страницы</td>
+                    </tr>
+                    <tr>
+                        <th colspan="2" scope="row">entry</th>
+                        <td>Точка входа. Файл JavaScript (путь), из которого webpack будет создавать сборку. Именно в этот файл должны добавляться все импорты других JavaScript файлов. Вместо одного файла может быть указан объект, содержащий свойства (имена) и значения (пути) к нескольким входным файлам</td>
+                    </tr>
+                    <tr>
+                        <th colspan="2" scope="row">mode</th>
+                        <td>
+                            Режим сборки.<br>
+                            Возможные значения:
+                            <dl>
+                                <dt><code>none</code></dt>
+                                <dd></dd>
+                                <dt><code>development</code></dt>
+                                <dd>Режим разработки. Собираемый файл не минифицируется. Значение по умолчанию.</dd>
+                                <dt><code>production</code></dt>
+                                <dd>Режим продакшена. Собираемый файл минифицируеться. </dd>
+                            </dl>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">module</th>
+                        <th scope="row">rules</th>
+                        <td>В качестве значения используется объект со свойством rules. У свойства rules в качестве значения используется массив в котором каждый элемент является объектом. Каждый таком объекте используются 2 свойства - test и use. Свойство test принимает регулярное выражение (не строка) определяющее какой для какого типа файлов будет предназначаться правило (например для файлов CSS: <code>/\.css$/</code>). Свойство use долнжно принимать строку, либо массив в котором каждое значение будет определять какой лоадер будет использоваться. Лоадеры будут использоваться в порядке от большего индекса массива к меньшиму (т.е. справа налево).</td>
+                    </tr>
+                    <tr>
+                        <th rowspan="2" scope="rowgroup">optimization</th>
+                        <th scope="row">splitChunks</th>
+                        <td>optimization принимает объект со свойством splitChunks у которого объект со свойтвом chunks (например: {chunks: 'all'} (значение all позволяет отделить все подключенные библиотеки и лоадеры в отдельные файлы. Такой подход позволит переиспользовать одну и туже библиотеку в нескольких entry файлах, при этом не раздувая каждый файл библиотекой, а подключая эту библиотеку отдельно в каждый файл))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">minimizer</th>
+                        <td>optimization принимает объект со свойством minimizer, которое управляет минифицированием и принимает в качестве значение массив плагинов минификации. Пример: [
+                            new CssMinimizerWebpackPlugin(),
+                            new TerserWebpackPlugin()
+                        ]</td>
+                    </tr>
+                    <tr>
+                        <th rowspan="2" scope="rowgroup">output</th>
+                        <th scope="row">filename</th>
+                        <td>Объект, содержайщий два свойства - filename и path. filename это имя файла который будет собран в результате работы webpack. path это абсолютный путь до той директории, в которой будет собран выходной файл (абсолютный путь лучше всего указывать с помощью класса Node.js path с методом resolve - path.resolve(__dirname, 'dist'))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">path</th>
+                        <td>Объект, содержайщий два свойства - filename и path. filename это имя файла который будет собран в результате работы webpack. path это абсолютный путь до той директории, в которой будет собран выходной файл (абсолютный путь лучше всего указывать с помощью класса Node.js path с методом resolve - path.resolve(__dirname, 'dist'))</td>
+                    </tr>
+                    <tr>
+                        <th colspan="2"scope="row">plugins</th>
+                        <td>Массив с объектами. Каждый объект является отдельым подключаемым плагином. У объекта свойство test отвечает за обрабатываемый тип файла и должен принимать значение регулярного выражения (пример: /\.css$/ или /\.(png|jpg|svg|gif)$/). Свойство use должно принимать строку с именем плагина который будет обрабатывать указанные файлы (может быть указан массив если плагинов несколько и в этом массиве плагины будут срабатывать в порядки от большего индекса массива к меньшиму (справа налево)). Если указанный тип файлов обрабатывает не плагин а сам webpack, то указывается свойство type у которого могут быть разные значения, определяющие как файл будет обработан. Примеры значений type: 'asset', 'asset/resource', 'asset/source', 'asset/inline'</td>
+                    </tr>
+                    <tr>
+                        <th rowspan="2" scope="rowgroup">resolve</th>
+                        <th scope="row">alias</th>
+                        <td>Объект. Позволяет определить псевдоним для пути (например: '@models': path.resolve(__dirname, 'src/models'), или '@': path.resolve(__dirname, 'src'))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">extensions</th>
+                        <td>Массив. Позволяет указать расширения, которые затем можно не указывать при импортах (указывать следует через точку. пример: '.js')</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section>
+            <h3>Плагины</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Название</th>
+                        <th scope="col">Установка</th>
+                        <th scope="col">Описание</th>
+                        <th scope="col">Подключение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row"><a href="https://www.npmjs.com/package/html-webpack-plugin" target="_blank">html-webpack-plugin</a></th>
+                        <td><code>npm install --save-dev html-webpack-plugin</code></td>
+                        <td>Добавляет файл html в директорию сборки. Чтобы файл создался на основе файла исходника в параметры плагина передать аргумент в виде объекта со свойством template и значением в виде пити до исходного файла html (пример: {
+                            template: './index.html'
+                        }). Также имеется свойство title значением которого может быть строка. Свойство title управляет тегом title в создаваямом html файле. Также имеется свойство minify принимающее в качестве значения объект у которого свойство collapseWhitespace с логическим значением отвечает за то чтоб файл html минифицировался в одну строку (вроде бы по умолчанию включено, но это не точно)</td>
+                        <td><code>const HTMLWebpackPlugin = require('html-webpack-plugin')</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><a href="https://www.npmjs.com/package/clean-webpack-plugin" target="_blank">clean-webpack-plugin</a></th>
+                        <td><code>npm install --save-dev clean-webpack-plugin</code></td>
+                        <td>Перед каждой сборкой очищает директорию, в которую кладутся выходные файлы, тем самым предотвращает засорение директории старыми файлами.</td>
+                        <td><code>const {CleanWebpackPlugin} = require('clean-webpack-plugin')</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><a href="https://www.npmjs.com/package/copy-webpack-plugin" target="_blank">copy-webpack-plugin</a></th>
+                        <td><code>npm install --save-dev copy-webpack-plugin</code></td>
+                        <td>Позволяет копировать указанные файлы при сборке с одного места в другое. Для указания файлов в параметры плагина необходимо передать объект со свойством patterns у которого значением будет массив объектов. Каждый такой объект должен содержать свойство from со значением пути до файла который следует скопировать, и свойство to со значением пути до директории в которую будет скопирован файл (пример: {
+                            patterns: [{
+                                from: path.resolve(__dirname, 'src/favicon.ico'),
+                                to: path.resolve(__dirname, 'dist')
+                            }]
+                        }).</td>
+                        <td><code>const CopyWebpackPlugin = require('copy-webpack-plugin')</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><a href="https://www.npmjs.com/package/mini-css-extract-plugin" target="_blank">mini-css-extract-plugin</a></th>
+                        <td><code>npm install --save-dev mini-css-extract-plugin</code></td>
+                        <td>Плагин, содержащий внутри себя лоадер. Этот лоадер можно использовать вместо style-loader (заменить 'style-loader' в module.rules на MiniCssExtractPlugin.loader (примечание: можно заменить на объект со свойством loader и значением MiniCssExtractPlugin.loader и если надо свойством options и какимито опциями (опции передаются в виде объекта. свойство hmr с логическим значением - позволяет горячую перезагрузку модулей(перезагрузка "сущностей" без перезагрузки страницы (только при работе в mode: 'development' и срабатывает только если это возможно (требуется самостоятельно определять в каком режиме идёт работа и включать/выключать эту опцию в зависимости от режима (пример: переменной, которая если режим development будет иметь значение true: const isDev = process.env.NODE_ENV === 'development', тогда для hmr можно не логическое значение задавать, переменную isDev (Консольная команда для Windows - set NODE_ENV=development (для mac и ubuntu - export NODE_ENV=development), позволяет задать режим development)))))))). Перед добавлением лоадера плагин следует подключить в разделе plugins и в качестве аргумента передать объект со свойством filename и значением имени которое будет сгенерировано при сборке. Имя можно использовать на основе паттернов. Например: {
+                            filename: '[name].[contenthash].css'
+                        }. Данный плагин позволяет в отличае от 'style-loader' не в тег head файла html записывать стили. а отделить их в отдельный файл стилей. Так же есть reloadAll с логическими значениями (непонятно для чего) [[[опции hmr и reloadAll по какойто причине не работают в webpack 5]]]</td>
+                        <td><code>const MiniCssExtractPlugin = require('mini-css-extract-plugin')</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><a href="https://www.npmjs.com/package/terser-webpack-plugin" target="_blank">terser-webpack-plugin</a></th>
+                        <td><code>npm install --save-dev terser-webpack-plugin</code></td>
+                        <td>Минифицирует JS файл. Хотя JS и так минифицируется в режими production, плагин позволяет настроить минификацию (уровень сжатия, удаление комментариев или сохранение лицензионных заметок и другое). Плагин должен быть вызван (через new) в массиве optimization.minimizer</td>
+                        <td><code>const TerserWebpackPlugin = require('terser-webpack-plugin')</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><a href="https://www.npmjs.com/package/css-minimizer-webpack-plugin" target="_blank">css-minimizer-webpack-plugin</a></th>
+                        <td><code>npm install --save-dev css-minimizer-webpack-plugin</code></td>
+                        <td>Минифицирует CSS. Плагин должен быть вызван (через new) в массиве optimization.minimizer</td>
+                        <td><code>const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin')</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Все плагины должны подключаться в свойстве <code>plugins</code>, принимающем массив. Каждое значение этого массива должно быть новым (new) экземпляром подключаемого плагина.</p>
+        </section>
+        <section>
+            <h3>Лоадеры</h3>
+            <p>Лоадеры добавляют функционал, позволяющий работать webpack с различными типами данных.</p>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><a href="https://www.npmjs.com/package/css-loader" target="_blank">css-loader</a></td>
+                        <td><code>npm install --save-dev css-loader</code></td>
+                        <td>Позволяет понимать импортирование CSS в JS код (обрабатывает CSS)</td>
+                    </tr>
+                    <tr>
+                        <td><a href="https://www.npmjs.com/package/style-loader" target="_blank">style-loader</a></td>
+                        <td><code>npm install --save-dev style-loader</code></td>
+                        <td>Добаляет код CSS в head файла html</td>
+                    </tr>
+                    <tr>
+                        <td><a href="https://www.npmjs.com/package/file-loader" target="_blank">file-loader</a></td>
+                        <td><code>npm install --save-dev file-loader</code></td>
+                        <td>Позволяет понимать импортирование файлов картинок (png, jpg, svg, gif) и других типов файлов (шрифты (@import шрифта (ttf, woff, woff2, eot) в .css из другого .css)) в JS код (и .css)</td>
+                    </tr>
+                    <p>Примечание. Можно писать так (возможно потому что file-loader больше не нужен. Следует разузнать):
+                        test: /\.(png|jpg|svg|gif)$/,
+                        // use: ['file-loader']
+                        // type: 'asset'
+                        // type: 'asset/resource' <br>при попытке добавить адрес файла в .css после сборки файл картинки не отобразился при использовании use: ['file-loader']. В случаях type: 'asset/resource' и type: 'asset'отобразился. При попытке вызвать адрес из js в консоль выводится при всех настройках. Тестировал на .png<br>
+                        Есть ещё вариант type: 'asset/inline'
+                    </p>
+                    <tr>
+                        <td><a href="https://www.npmjs.com/package/xml-loader" target="_blank">xml-loader</a></td>
+                        <td><code>npm install --save-dev xml-loader</code></td>
+                        <td>Если выводить в консоль, то xml будет представлен в виде объекта. В других случаях можно использовать например type: 'asset/source', а также другие варианты</td>
+                    </tr>
+                    <tr>
+                        <td><a href="https://www.npmjs.com/package/csv-loader" target="_blank">csv-loader</a></td>
+                        <td><code>npm install --save-dev csv-loader</code></td>
+                        <td>Позволяет выводить в консоль csv файлы в виде массива. В других случаях допустимо использовать type: 'asset/source' и другие типы. При сборке может произойти ошибка и понадобится пакет (не лоадер и не плагин) papaparse (видимо только для webpack 4)</td>
+                    </tr>
+                    <tr>
+                        <td><a href="https://www.npmjs.com/package/less-loader" target="_blank">less-loader</a></td>
+                        <td><code>npm install --save-dev less-loader</code></td>
+                        <td>Позволяет импортировать файлы less прямо в .js файл. Пакет уже имеет среди зависимостей препроцессор less, поэтому отдельно его ставить не требуется</td>
+                    </tr>
+                    <tr>
+                        <td><a href="https://www.npmjs.com/package/sass-loader" target="_blank">sass-loader. Пакет уже имеет среди зависимостей препроцессор sass, поэтому отдельно его ставить не требуется</a></td>
+                        <td><code>npm install --save-dev sass-loader</code></td>
+                        <td>Позволяет импортировать файлы sass и scss прямо в .js файл.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="https://www.npmjs.com/package/babel-loader" target="_blank">babel-loader</a></td>
+                        <td><code>npm install --save-dev babel-loader</code></td>
+                        <td>Транспилятор. Настройки: {
+                            test: /\.m?js$/,
+                            exclude: /node_modules/,
+                            use: {
+                              loader: "babel-loader",
+                              options: {
+                                presets: ['@babel/preset-env']
+                              }
+                            }
+                          }
+                        Свойство exclude исключает из обработки директорию /node_modules/
+                        Для работы требуется установка babel с пресетом preset-env. Пресет позволяет настроить то под какие браузеры будет компилироваться код в babel. Настройку надо добавить в package.json: "browserslist": "> 0.25%, not dead"</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <p>@import "~normalize.css"; - тильда говорит о том что искать normalize.css следует в директории node_modules (в случае если normalize загркжен через npm)</p>
+        <p>пакет cross-env позволяет задавать системную переменную NODE_ENV назависимо от системы. Использование: задать в package.json воле scripts в качестве скрипта строку cross-env NODE_ENV=development или cross-env NODE_ENV=production. Пример: "dev": "cross-env NODE_ENV=development webpack --mode development"</p>
+        <p>У настройки optimization удобно использовать функцию:
+            const isDev = process.env.NODE_ENV === 'development'
+            const isProd = !isDev
+
+            const optimization = () => {
+            const config = {
+                splitChunks: {
+                    chunks: 'all'
+                }
+            }
+        
+            if (isProd) {
+                config.minimizer = [
+                    new CssMinimizerWebpackPlugin(),
+                    new TerserWebpackPlugin()
+                ]
+            }
+            return config
+
+            после чего эту функцию вызвать для optimization: optimization()
+        </p>
+        <p>Функция вместо строки свойства filename. Позволяет убрать hash при режиме разработки (для удобства). При вызове функции filename() надо передать аргументом расширение.
+            const filename = ext => isDev ? `[name].${ext}` : `[name].[hash].${ext}`</p>
+    </main>
 </body>
 </html>

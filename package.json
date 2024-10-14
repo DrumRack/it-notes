@@ -2,7 +2,7 @@
   "name": "it-notes",
   "version": "1.0.0",
   "description": "Информация о различных технологиях",
-  "main": "index.js",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,8 +11,13 @@
     "url": "git+https://github.com/DrumRack/it-notes.git"
   },
   "keywords": [
+    "babel",
     "css",
     "git",
+    "html",
+    "npm",
+    "prettier",
+    "sass",
     "webpack"
   ],
   "author": "Mikhail Kolesnikov <redrumrack@gmail.com>",

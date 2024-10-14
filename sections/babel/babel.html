@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../global.css">
+    <title>Babel</title>
+</head>
+<body>
+    <main>
+        <p>Версия: ???</p>
+        <p>Официальный сайт: <a href="https://babeljs.io" target="_blank">Babel</a></p>
+        <p>Транспилятор</p>
+        <section>
+            <h2>Установка</h2>
+            <p><code>npm install --save-dev @babel/core</code></p>
+        </section>
+        Установка пресета:
+        npm install @babel/preset-env --save-dev
+        Добавить в package.json: "browserslist": "> 0.25%, not dead"
+        Установка полифила (УСТАРЕЛО!):
+        npm install --save @babel/polyfill
+        после установки полифил подключается в 
+        entry: {
+            main: ['@babel-polyfill', './index.js'],}
+    </main>
+</body>
+</html>
